@@ -1,0 +1,12 @@
+8.0以下：
+externalDataSize = /sdcard/Android/packageName/data
+externalCacheSize = /sdcard/Android/packageName/cache
+cacheSize = /data/data/packageName/cache
+dataSize = /data/data/packageName/除cache外 （主要是app_megapp、files、database、app_webview）
+appSize = /data/app/packageName
+8.0及以上：
+cacheSize = externalCacheSize + cacheSize
+dataSize = externalDataSize + dataSize
+appSize = /data/app/packageName
+查看当前文件大小：
+du -sh *

@@ -1,0 +1,2 @@
+查看手机温度：
+adb shell dumpsys battery | grep temperature

@@ -1,0 +1,11 @@
+使用android 自带adb 命令获取页面fps
+命令： adb -s "device" shell dumpsys SurfaceFlinger --list | grep "appPackage" | grep -v "SurfaceView"  获取上层activity（layername）
+
+获取页面最近128帧绘制详细时间戳：
+adb shell dumpsys SurfaceFlinger --latency "com.xueqiu.android/com.xueqiu.android.common.MainActivity"
+
+计算方式：
+FPS = totalFrame/totalTime
+totalFrame= 当前log中非0行 - 1
+totalTime= 最后t2时刻 – 初始t2时刻
+https://blog.csdn.net/itfootball/article/details/43084527

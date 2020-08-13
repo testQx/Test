@@ -1,0 +1,8 @@
+adb -s devices shell cat /proc/net/xt_qtaguid/stats | grep uid
+获取字段：
+通过uid 区分不同app的流量
+其中iface（网络类型），rx_bytes(下行流量，包括tcp+udp)，tx_bytes(上行流量，包括tcp+udp)，
+rx_tcp_bytes(tcp下行流量)，rx_udp_bytes(udp下行流量)，tx_tcp_bytes(tcp上行流量)，tx_udp_bytes(udp上行流量)；
+方案中获取的是rx_bytes 和 tx_bytes
+计算：单位Byte
+使用总流量 = （最终上行流量 - 起始上行流量）+ （最终下行流量 - 起始下行流量）

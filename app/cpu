@@ -1,0 +1,70 @@
+获取手机CPU信息：（processor代表核）
+adb shell cat proc/cpuinfo
+测试CPU方法：
+方法一：adb shell dumpsys cpuinfo
+CPU使用率 PID/包名 详细使用率情况
+缺点：延迟高，更新慢
+方法二：adb shell top
+adb shell top | grep packagename 查看指定app的CPU使用率，该命令会每隔1-2秒刷新一次
+adb shell top -n 3| grep com.xueqiu -n 指定刷新次数
+adb shell top -p pid 指定进程
+方法三：adb shell cat /proc/stat  和 adb shell cat /proc/pid/stat
+adb shell cat /proc/stat:
+    - 第一行是CPU的使用情况，后面依次是每个核的使用情况。
+    - 每一行的含义如下：
+      - user(1843147)：从系统启动开始累计到当前时刻，用户态的CPU时间（单位：jiffies） ，不包含nice值为负进程。1 jiffies=0.01秒
+      - nice(161426)：从系统启动开始累计到当前时刻，nice值为负的进程所占用的CPU时间（单位：jiffies）
+      - system (1338063) 从系统启动开始累计到当前时刻，核心时间（单位：jiffies）
+      - idle (10047312) 从系统启动开始累计到当前时刻，除硬盘IO等待时间以外其它等待时间（单位：jiffies）
+      - iowait (165356) 从系统启动开始累计到当前时刻，硬盘IO等待时间（单位：jiffies）
+      - irq (381) 从系统启动开始累计到当前时刻，硬中断时间（单位：jiffies）
+      - softirq (273341) 从系统启动开始累计到当前时刻，软中断时间（单位：jiffies）
+    - 总的CPU时间：cpu_time = user + system + nice + idle + iowait + irq + softirq
+adb shell cat /proc/pid/stat:
+    - 输出的第一列为PID，
+    - 第14、15列分别为：
+      - utime=21585，该任务在用户态运行的时间，单位为jiffies
+      - stime=15516，该任务在核心态运行的时间，单位为jiffies
+    - 该PID的CPU时间：pid_cpu_time = utime + stime
+  - CPU使用率计算方式：
+    - 先取开始的pid_cpu_time1值和cpu_time1值
+    - 隔一段时间片
+    - 再取一次计算pid_cpu_time2，cpu_time2
+    - cpu使用率 = (pid_cpu_time2 – pid_cpu_time1) * 100 / (cpu_time2 - cpu_time1)%
+
+使用android 自带adb 命令获取对应app占用cpu
+命令：adb -s "device" shell top -n -1 | grep "uid"
+测试精度：1%
+注意：
+    1. 由于手机型号不同，top 命令获取cpu所在列不同，所以需要先获取cpu所在列，进而根据上面命令获取cpu
+           命令：adb -s "device" shell top -n 1 | grep CPU
+    2. android 系统8.0.0（api 26）以后该命令获取的cpu是多核累加值（可能超过100%），所以需要将获取的cpu/核数
+         命令：adb -s "device" shell fetprop ro.build.version.sdk 获取系统api版本
+         命令：adb -s "device" shell cat /proc/cpuinfo 获取cpu核数
+         实际cpu = 总cpu/核数
+
+cpu 频率监控
+cpu 运行过程中会耗电、发热，当检测到cpu温度过高时，为防止cpu温度过高损坏，厂商或app开发人员会对手机进行降频，从而减少cpu耗电、发热；由于cpu降频会导致cpu处理能力变弱，导致手机出现卡顿等性能问题。有些app为了增加使用过程的流畅性，会设定app进行超频运行，从而提高cpu的处理能力。
+1.cpu 运行模式
+获取cpu 支持运行模式：
+adb shell cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors
+cpu 当前采用模式：
+adb shell cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+2.获取cpu 运行频率
+当前频率：
+adb shell cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+cpu总运行频率，将所有cpu 运行频率求和即可
+支持的所有频率：
+adb shell cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
+最小频率：
+adb shell cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+最大频率：
+adb shell cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+通过时时记录手机cpu运行频率，与正常运行频率对比可以获取到手机是降频、正常频率或超频运行
+ondemand（按需响应模式）系统默认的超频模式，在最大最小频率之间自动调整
+interactive（交流循环模式）只要手机运行频率直接上最高值，然后CPU负荷慢慢降低（系统响应最快，耗电多一些）
+conservative（保守模式）随着CPU负荷加大，逐步提升频率到最高，然后降至最低（系统响应快，耗电比I模式省）
+smartass是I和C模式的升级，实际cpu不会降到最低，响应快，待机应该会耗电
+performance（高性能模式）高性能模式，按你设定范围的最好频率运行(机器最流畅,耗电也最大)
+userspace（用户隔离模式）当控制器处于非工作状态时控制cpu速度的一种方法，建议最好不使用该选项
+powersave（省电模式）按设定最小频率低负荷运行，省电但系统响应速度慢lagthree(不受延迟模式）一种CPU调节策略，倾向于节省电量

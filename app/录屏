@@ -1,0 +1,16 @@
+adb devices
+adb -s emulator-5554 shell dumpsys window |grep mCurrentFocus
+查看缓存：
+adb -s emulator-5554 shell dumpsys window |grep mCurrentFocus | awk  '{print $3}' | awk -F / '{print $1}'
+清理缓存：
+adb -s emulator-5554  shell pm clear com.android.settings
+录屏：
+adb -s ' + device +' shell screenrecord /sdcard/video.mp4
+截图：
+adb -s ' + device +' shell screencap -p /sdcard/test.png && adb pull /sdcard/test.png ~/Desktop/
+查看机型：
+adb -s emulator-5554 shell getprop ro.product.model
+查看系统：
+adb -s emulator-5554 shell getprop ro.build.version.release
+查看分辨率：
+adb -s emulator-5554 shell wm size

@@ -1,0 +1,45 @@
+查看内存：
+adb shell dumpsys meminfo pid
+    - VSS - Virtual Set Size 虚拟耗用内存（包含共享库占用的内存）
+    - RSS - Resident Set Size 实际使用物理内存（包含共享库占用的内存）
+    - PSS - Proportional Set Size 实际使用的物理内存（比例分配共享库占用的内存）
+    - USS - Unique Set Size 进程独自占用的物理内存（不包含共享库占用的内存）
+    - 测试进程的内存占用一般以PSS为准
+    - 重点关注：Pss Total，Private Dirty，Private Clean
+      - Pss Total：实际使用内存
+      - Private Dirty：进程独占内存。也就是进程销毁时可以回收的内存容量。通常private Dirty内存是最重要的部分，因为只被自己进程使用。Dirty内存是已经被修改的内存页，必须常驻内存（因为没有swap）
+      - Private Clean：Clean内存是已经映射持久文件使用的内存页（例如正在被执行的代码），因此一段时间不使用的话就可以置换出去。
+    - Native Heap：Native代码分配的内存，虚拟机和Android框架分配内存
+    - Dalvik Heap：Dalvik分配的内存，也就是Java对象分配的内存
+    - Dalvik Other：Dalvik的开销（例如即时 (JIT) 编译和垃圾回收记录）
+    - Stack：栈内存
+    - Ashmem：匿名共享内存
+    - Gfx dev，EGL mtrack，GL mtrack：Graphics内存相关
+    - .so mmap：C库代码占用的内存
+    - .jar mmap：java文件代码占用的内存
+    - .apk mmap：apk代码占用的内存
+    - .ttf mmap：ttf文件代码占用的内存
+    - .dex mmap：dex文件代码占用内存。类函数的代码和常量占用的内存，dex mmap是映射classex.dex文件，Dalvik虚拟机从dex文件加载类信息和字符串常量等。
+    - .oat mmap：代码映像占用的内存
+    - .art mmap：堆映像占用的内存
+    - Other mmap：其它文件占用的内存
+    - Unknown：系统无法将其分类到其他更具体的一个项中的任何内存页
+  - 接下来我们看一下Memory profiler和上面各项的对应关系，从数值上计算，可以判断出：
+    - Java Heap：Dalvik Heap（Dirty）+ .art mmap（Dirty、Clean）
+    - Native Heap：Native Heap（Dirty）
+    - Code：.so mmap（Dirty、Clean）+ .jar mmap（Dirty、Clean）+ .apk mmap（Dirty、Clean）+ .ttf mmap（Dirty、Clean）+ .dex mmap（Dirty、Clean）+ .oat mmap（Dirty、Clean）
+    - Stack：Stack
+    - Graphics：Gfx dev + EGL mtrack + GL mtrack
+    - Others：Dalvik Other（Dirty、Clean）+ Other dev（Dirty、Clean）+ Other mmap（Dirty、Clean）
+  - 根据上面的对应关系，可以看出Memory Profiler中的获取的数值是USS，而不是PSS，通过dumpsys meminfo多出的20M左右的正是按比例分配的共享内存
+结论
+- dumpsys meminfo计算出的内存占用是PSS，memory profiler获取的数值是USS
+- A + B + C + D = VSS - 虚拟集大小虚拟耗用内存（包含共享库占用的内存）
+- B + C + D = RSS - Resident Set Size实际使用物理内存（包含共享库占用的内存）
+- B + C = PSS - 比例集大小实际使用的物理内存（比例分配共享库占用的内存）
+- B = USS - 独特集合大小进程独自占用的物理内存（不包含共享库占用的内存）
+其中PSS，USS可以反映一个进程的内存使用情况
+A：分配但尚未使用的内存（虚拟消耗）
+B：进程占用内存
+C：按比例分配共享库占用的内存
+D：共享库所占内存
