@@ -23,5 +23,17 @@
 
 
 class Solution:
-    def rotate(self, nums: list[int], k: int) -> None:
-        pass
+    def rotate(self, nums: list, k: int) -> None:
+        if k > len(nums):
+            k = k % len(nums)
+        nums[:] = nums[len(nums) - k:] + nums[:len(nums) - k]
+        return nums
+
+
+print(Solution().rotate([1, 2, 3, 4, 5, 6, 7], 3))
+
+# 思路直接切片拼接
+# 另一种思路：三次反转，先整个都反转，然后将前n个反转，然后将后面的在反转
+# [1, 2, 3, 4, 5, 6, 7]
+# [7,6,5,4,3,2,1]
+# [5,6,7,1,2,3,4]

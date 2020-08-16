@@ -14,6 +14,32 @@
 0 <= nums[i] <= 400
 '''
 
+
 class Solution:
-    def rob(self, nums: list[int]) -> int:
-        pass
+    def rob(self, nums: list) -> int:
+        dp = [0 for _ in range(len(nums))]
+        print(dp)# 预生成等长的dp数组
+        if len(dp) <= 0:
+            return 0  # 没有人家，没有钱
+        if len(dp) >= 1:
+            dp[0] = nums[0]  # 只有一家的时候，没得选，就它了
+        if len(dp) >= 2:
+            dp[1] = max(nums[1], dp[0])  # 这里写成 max(num[1],num[0]) 亦可，但是为了更通用。我们这样子写。表示要么打劫当前这一家，要么打劫前一家
+        for i in range(2, len(nums)):
+            dp[i] = max(nums[i] + dp[i - 2], dp[i - 1])  # 这个加 dp[i-2] 是最精髓的，表示打劫当前这家，并且寻找打劫上上一家的最大值，做累加
+        print(dp)  #个人调试用，显示dp数组。发现上面还是改成大于等于比较好。不然第一项和第二项始终为0。数据失真
+        return dp[-1]  # 返回最后一项，也就是基于当前数据的最大收益
+
+
+print(Solution().rob([4, 1, 1, 4]))
+# [1,2,3,1]  4
+# [1,1,1,3]  4
+# [1,1,1,1,3]  5
+# [1,1,1,5,3]   6
+
+
+# 计算状态数组，需要用到递推公式，而递推公式是根据题意得到的：(max_list为状态数组，num为题目给出的数组，i为数组下标)
+# max_list[i] = max(max_list[0],max_list[1]...max_list[i-2]) + num[i]
+# 解释：第 i 个子问题的解，是之前所有子问题（除了上一个子问题，因为题目要求不能连续偷窃）中的 最优解 + 当前值。你可以观察我上面的图，你会发现状态数组的每个值都是这样计算出来的
+# 题目给出的数字【2，7，9，3，1】
+# 作者：ai-you-wei-a 状态数组【2，7，11，10，12】
