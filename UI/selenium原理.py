@@ -6,7 +6,6 @@
 # ->程序告诉RemoteWebDriver打开一个浏览器(发送post请求，带上请求参数)，然后再向remote server发送执行浏览器动作的请求
 
 
-
 # selenium原理：
 # 1.selenium client(python等语言编写的自动化测试脚本)初始化一个service服务，通过Webdriver启动浏览器驱动程序chromedriver.exe
 #

@@ -20,7 +20,6 @@ class Solution:
         print(datas)
         for each in datas:
             # 此时的each指的是key值
-            print(each)
             if datas[each] == 1: return each
 
 
