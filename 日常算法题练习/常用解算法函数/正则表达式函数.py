@@ -48,7 +48,7 @@ print("*" * 30)
 split 方法按照能够匹配的子串将字符串分割后返回列表，它的使用形式如下
 re.split(pattern, string[, maxsplit=0, flags=0])
 maxsplit	分隔次数，maxsplit=1 分隔一次，默认为 0，不限制次数。'''
-print(re.split('\W+', 'runoob, runoob, runoob.'))
+print(re.split('\W+', 'runoob, runoob, runoob.',maxsplit=2))
 print("*" * 30)
 '''常用正则表达式
 rub[ye]	匹配 "ruby" 或 "rube" ，即[]指匹配[]中的任意一个字母/数字等
